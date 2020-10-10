@@ -81,82 +81,11 @@ case "$i_method" in
 			((ITER=ITER+1))
 		done
 		read -p "Select your external drive: " driveSelect
-		echo "Installing on ${mediaList[$driveSelect]}..."
-		cd /media/$USER/${mediaList[$driveSelect]}
-
-		btfsPath=/media/$USER/${mediaList[$driveSelect]}/btfs
-		dotBtfsPath=/media/$USER/${mediaList[$driveSelect]}/.btfs
-		echo ${btfsPath}
-		echo ${dotBtfsPath}
-		echo ""
-		if [[ -d "${btfsPath}" ]];then
-    			echo "BTFS folder already exists, cleaning up!..."
-    			sudo rm -rf ${btfsPath}
-			sudo rm -rf ${dotBtfsPath}
-    			echo "BTFS folder deleted!"
-		fi
-		mkdir btfs
-		#ls
-		cd btfs
-		#Downloading latest btfs binary files..
-		echo Downloading latest arm btfs binary file...		
-		wget https://github.com/TRON-US/go-btfs/releases/latest/download/btfs-linux-arm.tar
-		tar -xf btfs-linux-arm.tar
-		cp config_linux_arm.yaml config.yaml
-		cp btfs-linux-arm btfs
-		rm config_linux_arm.yaml
-		rm btfs-linux-arm
-		rm btfs-linux-arm.tar
-		
-		
-
-		
-		echo ""
-		echo "Adding PATH and BTFS_PATH to .profile ..."
-		cd ${HOME}
-		
-		export BTFS_PATH=${dotBtfsPath} #BTFS repo PATH
-		export PATH=${PATH}:${btfsPath} >> .bashrc # BTFS binary PATH
-		source ~/.bashrc
-		echo ""
-		echo "Creating BTFS Repository..."
-		btfs init
-		btfs config profile apply storage-host
-		echo ""
-		echo "Starting BTFS daemon..."
-		echo "-----END OF SCRIPT. ENJOY :)-----"
-		#btfs daemon
-	else
-		echo "Installation aborted by user"
-	fi	
-   ;;
-   "2") read -p "Installing on External drive (BTFS Only) Proceed?(y/n)" DECISION
-	if [ $DECISION = "y" ]
-	then
-		
-		echo "Testing our GO install..."
-		which go	#you should get /usr/local/go/bin/go
-		go version	#you should get go version go1.14.4 linux/arm
-		cd /media/$USER
-		OUTPUT="$(ls -1)"
-		cd ${HOME}
-		echo "${OUTPUT}" >> listOfMedia.txt
-		readarray -t mediaList < listOfMedia.txt
-		rm listOfMedia.txt
-		ITER=0
-		echo ""
-		echo "AVAILABLE EXTERNAL DRIVES: --->"
-		for drive in "${mediaList[@]}"
-		do	
-			echo "$ITER) $drive"
-			((ITER=ITER+1))
-		done
-		read -p "Select your external drive: " driveSelect
 		echo "Installing btfs repo on ${mediaList[$driveSelect]}..."
 		#cd /media/$USER/${mediaList[$driveSelect]}
 		
 		echo "BTFS binary will be installed in:"
-		btfsPath=/${HOME}/btfs/bin
+		btfsPath=${HOME}/btfs/bin
 		echo ${btfsPath}
 		echo "BTFS repo will be installed in:"
 		dotBtfsPath=/media/$USER/${mediaList[$driveSelect]}/.btfs
@@ -212,7 +141,93 @@ case "$i_method" in
 		btfs config profile apply storage-host
 		echo ""
 		echo "-----END OF SCRIPT. ENJOY :)-----"
-		#btfs daemon
+	else
+		echo "Installation aborted by user"
+	fi	
+   ;;
+   "2") read -p "Installing on External drive (BTFS Only) Proceed?(y/n)" DECISION
+	if [ $DECISION = "y" ]
+	then
+		
+		echo "Testing our GO install..."
+		which go	#you should get /usr/local/go/bin/go
+		go version	#you should get go version go1.14.4 linux/arm
+		cd /media/$USER
+		OUTPUT="$(ls -1)"
+		cd ${HOME}
+		echo "${OUTPUT}" >> listOfMedia.txt
+		readarray -t mediaList < listOfMedia.txt
+		rm listOfMedia.txt
+		ITER=0
+		echo ""
+		echo "AVAILABLE EXTERNAL DRIVES: --->"
+		for drive in "${mediaList[@]}"
+		do	
+			echo "$ITER) $drive"
+			((ITER=ITER+1))
+		done
+		read -p "Select your external drive: " driveSelect
+		echo "Installing btfs repo on ${mediaList[$driveSelect]}..."
+		#cd /media/$USER/${mediaList[$driveSelect]}
+		
+		echo "BTFS binary will be installed in:"
+		btfsPath=${HOME}/btfs/bin
+		echo ${btfsPath}
+		echo "BTFS repo will be installed in:"
+		dotBtfsPath=/media/$USER/${mediaList[$driveSelect]}/.btfs
+		echo ${dotBtfsPath}
+		echo ""
+		if [[ -d "${btfsPath}" ]];then
+    			echo "BTFS binary already exists, cleaning up!..."
+    			sudo rm -rf ${btfsPath}
+			#sudo rm -rf ${dotBtfsPath}
+    			echo "BTFS folder deleted!"
+		fi
+		#Creating a clean folder for the new binary file
+		mkdir btfs
+		cd btfs
+		mkdir bin
+		cd bin
+		#BTFS repo folder check 
+		if [[ -d "${dotBtfsPath}" ]];then
+			read -p "BTFS repo data found in external drive, do you want to erase ALL data?(y/n)" DECISION
+			if [ $DECISION = "y" ]
+			then
+				echo "Cleaning up!..."
+	    			#sudo rm -rf ${btfsPath}
+				sudo rm -rf ${dotBtfsPath}
+	    			echo "BTFS folder deleted!"
+			else
+				echo "Not touching BTFS data on external drive..."
+			fi
+		fi
+			
+		
+		#Downloading latest btfs binary files..
+		echo Downloading latest arm btfs binary file... 			
+		wget https://github.com/TRON-US/go-btfs/releases/latest/download/btfs-linux-arm.tar
+		tar -xf btfs-linux-arm.tar
+		cp config_linux_arm.yaml config.yaml
+		cp btfs-linux-arm btfs
+		rm config_linux_arm.yaml
+		rm btfs-linux-arm
+		rm btfs-linux-arm.tar
+		#chmod +x btfs
+		echo ""
+		echo "Adding PATH and BTFS_PATH ..."
+		cd ${HOME}
+		
+		#export PATH=${btfsPath}:$PATH
+		export BTFS_PATH=${dotBtfsPath} #BTFS repo PATH
+		echo export 'PATH=${PATH}:${HOME}/btfs/bin #BTFS binary file PATH' >> .bashrc # BTFS binary PATH
+		source ~/.bashrc
+		echo ""
+		echo "Creating BTFS Repository..."
+		btfs init
+		btfs config profile apply storage-host
+		echo ""
+		echo "-----END OF SCRIPT. ENJOY :)-----"
+		
 		
 
 	else
